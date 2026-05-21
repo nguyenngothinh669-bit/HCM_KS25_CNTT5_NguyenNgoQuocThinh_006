@@ -9,6 +9,9 @@ CREATE TABLE Courses (
     course_code VARCHAR(20) NOT NULL UNIQUE , 
     department VARCHAR(20) NOT NULL ,
     creation_date DATE NOT NULL 
+    -- Bonus: Phiên bản hiện tại không sài được hàm này 
+    -- CONSTRAINT ck_creation_date CHECK(creation_date < CURDATE() OR NOW()) 
+    -- nên em không dùng ràng buộc này được 
 ) ; 
 
 CREATE TABLE Students (
@@ -39,7 +42,7 @@ CREATE TABLE Enrollment_Details (
     attendance_check VARCHAR(50) NOT NULL , 
     detail_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,
     
-    CONSTRAINT fk_enrollmet_details FOREIGN KEY (enrollment_id) REFERENCES Enrollments (enrollment_id) 
+    CONSTRAINT fk_enrollmet_details FOREIGN KEY (enrollment_id) REFERENCES Enrollments(enrollment_id) 
 ) ; 
 
 CREATE TABLE Academic_Logs (
@@ -95,10 +98,10 @@ SET SQL_SAFE_UPDATES = 0 ;
 UPDATE Enrollments e
 JOIN Courses c ON c.course_id = e.course_id 
 SET credits = credits + 1 
-WHERE status='Completed' AND  creation_date < YEAR(creation_date) = 2000 ; 
+WHERE status = 'Completed' AND creation_date < (YEAR(creation_date) = 2000) ; 
 SET SQL_SAFE_UPDATES = 1 ; 
 -- 2.2 
-DELETE FROM Academic_Logs WHERE log_time < '2024-05-20' ; 
+DELETE FROM Academic_Logs WHERE log_time < '2024-05-20 00:00:00' ; 
 
 -- Phan 3 : Truy Van Co Ban
 -- Cau 1 
@@ -129,7 +132,7 @@ SELECT student_id , full_name , gpa FROM Students
 WHERE gpa = (SELECT MAX(gpa) max_gpa FROM Students) ; 
 
 -- Phan 5 INDEX & VIEW 
--- cau 1 
+-- Cau 1 
 CREATE INDEX idx_enrollments ON Enrollments (status,credits) ; 
 -- Cau 2 
 CREATE VIEW vw_show_data AS 
@@ -162,8 +165,8 @@ BEGIN
         WHERE student_id = NEW.student_id 
         LIMIT 1 ; 
         
-		INSERT INTO Academic_logs (detail_id,student_id,note,log_time) 
-        VALUES (v_detail_id,v_student_id,'Course completed',NOW()) ; 
+		INSERT INTO Academic_logs (detail_id,student_id,log_time,note) 
+        VALUES (v_detail_id,v_student_id,NOW(),'Course completed') ; 
     END IF ; 
 END //  
 DELIMITER ; 
@@ -237,8 +240,8 @@ BEGIN
         WHERE student_id = p_student_id 
         LIMIT 1 ; 
         
-		INSERT INTO Academic_logs (detail_id,student_id,note,log_time) 
-        VALUES (v_detail_id,v_student_id,'Reassigned',NOW()) ; 
+		INSERT INTO Academic_logs (detail_id,student_id,log_time,note) 
+        VALUES (v_detail_id,v_student_id,NOW(),'Reassigned') ; 
         
         COMMIT ; 
 	END IF ; 
