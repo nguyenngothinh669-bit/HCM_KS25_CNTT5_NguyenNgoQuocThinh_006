@@ -8,7 +8,10 @@ CREATE TABLE Courses (
     course_name VARCHAR(100) NOT NULL , 
     course_code VARCHAR(20) NOT NULL UNIQUE , 
     department VARCHAR(20) NOT NULL ,
-    creation_date DATE NOT NULL 
+    creation_date DATE NOT NULL ,
+    created_at DATETIME DEFAULT NOW() ,
+    
+    CONSTRAINT ck_creation_date CHECK(creation_date < created_at) 
 ) ; 
 
 CREATE TABLE Students (
