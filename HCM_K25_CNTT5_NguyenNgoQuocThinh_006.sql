@@ -9,9 +9,6 @@ CREATE TABLE Courses (
     course_code VARCHAR(20) NOT NULL UNIQUE , 
     department VARCHAR(20) NOT NULL ,
     creation_date DATE NOT NULL 
-    -- Bonus: Phiên bản hiện tại không sài được hàm này 
-    -- CONSTRAINT ck_creation_date CHECK(creation_date < CURDATE() OR NOW()) 
-    -- nên em không dùng ràng buộc này được 
 ) ; 
 
 CREATE TABLE Students (
