@@ -39,7 +39,7 @@ CREATE TABLE Enrollment_Details (
     attendance_check VARCHAR(50) NOT NULL , 
     detail_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,
     
-    CONSTRAINT fl_enrollmet_details FOREIGN KEY (enrollment_id) REFERENCES Enrollments (enrollment_id) 
+    CONSTRAINT fk_enrollmet_details FOREIGN KEY (enrollment_id) REFERENCES Enrollments (enrollment_id) 
 ) ; 
 
 CREATE TABLE Academic_Logs (
@@ -89,18 +89,18 @@ INSERT INTO Academic_Logs (detail_id,student_id,log_time,note) VALUES
 (8002,5,'2024-05-20 08:10','Chờ phê duyệt điểm'),
 (8005,4,'2024-05-20 09:05','Hủy do vắng quá số'); 
 
--- Cau 2 
+-- Cau 2 Update & Delete 
 -- 2.1 
 SET SQL_SAFE_UPDATES = 0 ; 
 UPDATE Enrollments e
 JOIN Courses c ON c.course_id = e.course_id 
 SET credits = credits + 1 
-WHERE status='Completed' AND  creation_date < '2000-01-01' ; 
+WHERE status='Completed' AND  creation_date < YEAR(creation_date) = 2000 ; 
 SET SQL_SAFE_UPDATES = 1 ; 
 -- 2.2 
 DELETE FROM Academic_Logs WHERE log_time < '2024-05-20' ; 
 
--- Phan 3 
+-- Phan 3 : Truy Van Co Ban
 -- Cau 1 
 SELECT full_name ,major,gpa FROM Students 
 WHERE gpa > 3.8 OR major = 'Kỹ thuật PM' ; 
@@ -112,7 +112,7 @@ SELECT enrollment_id ,enroll_time,credits FROM Enrollments
 ORDER BY credits DESC 
 LIMIT 2 OFFSET 2 ; 
 
--- Phan 4 
+-- Phan 4 : Truy Van Nang Cao 
 -- Cau 1 
 SELECT c.course_name ,s.full_name ,s.major,e.credits,e.enroll_time  
 FROM Enrollments e 
@@ -128,7 +128,7 @@ HAVING total_credits > 120 ;
 SELECT student_id , full_name , gpa FROM Students 
 WHERE gpa = (SELECT MAX(gpa) max_gpa FROM Students) ; 
 
--- Phan 5 
+-- Phan 5 INDEX & VIEW 
 -- cau 1 
 CREATE INDEX idx_enrollments ON Enrollments (status,credits) ; 
 -- Cau 2 
@@ -141,7 +141,7 @@ FROM Students s
 LEFT JOIN Enrollments e ON s.student_id = e.student_id 
 GROUP BY s.student_id ,s.full_name ; 
 
--- Phan 6 
+-- Phan 6 TRIGGER
 -- Cau 1 
 DELIMITER //
 CREATE TRIGGER trg_after_updates_enrollments 
@@ -182,7 +182,7 @@ BEGIN
 END //  
 DELIMITER ; 
 
--- Phan 7 
+-- Phan 7 : STORED PROCEDURE 
 -- cau 1 
 DELIMITER // 
 CREATE PROCEDURE sp_check_status (p_student_id INT ,OUT p_message VARCHAR(50)) 
@@ -244,3 +244,5 @@ BEGIN
 	END IF ; 
 END // 
 DELIMITER ; 
+
+
