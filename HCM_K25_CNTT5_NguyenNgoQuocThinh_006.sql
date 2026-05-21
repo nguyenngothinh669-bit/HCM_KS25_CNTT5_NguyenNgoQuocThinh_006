@@ -204,3 +204,43 @@ END //
 DELIMITER ; 
 
 -- Cau 2 
+DELIMITER // 
+CREATE PROCEDURE sp_transfer_students (p_student_id INT,p_new_enrollment_id INT) 
+BEGIN 
+	DECLARE v_is_valid INT DEFAULT 0 ; 
+	DECLARE v_detail_id INT ; 
+	DECLARE v_student_id INT ; 
+    
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+		ROLLBACK ; 
+        RESIGNAL ; 
+    END ; 
+    
+    START TRANSACTION ; 
+    IF v_is_valid = 0 THEN 
+		SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'ERROR: Not found ' ; 
+	ELSE 
+		
+		UPDATE Enrollments 
+        SET student_id = p_student_id 
+        WHERE enrollment_id = p_new_enrollment_id ; 
+        
+        SELECT detail_id INTO v_detail_id 
+        FROM Enrollment_Details 
+        WHERE enrollment_id = p_new_enrollment_id
+        LIMIT 1 ; 
+        
+        SELECT student_id INTO v_student_id 
+        FROM Students 
+        WHERE student_id = p_student_id 
+        LIMIT 1 ; 
+        
+		INSERT INTO Academic_logs (detail_id,student_id,note,log_time) 
+        VALUES (v_detail_id,v_student_id,'Reassigned',NOW()) ; 
+        
+        COMMIT ; 
+	END IF ; 
+END // 
+DELIMITER ; 
